@@ -20,7 +20,7 @@
 </head>
 <body>
   <header>
-    <h1>Campus 360 | Interactive Virtual Tour</h1>
+    <h1>Benteng Rotterdam | Interactive Virtual Tour</h1>
     <p class="intro">Drag to look around. Click arrows to change locations; click info icons for explanations.</p>
   </header>
   <main><div id="panorama" aria-label="Interactive 360-degree campus tour"></div></main>
@@ -29,42 +29,130 @@
   <script>
     pannellum.viewer("panorama", {
       "default": {
-        "firstScene": "entrance",
+        "firstScene": "gerbang_masuk",
         "sceneFadeDuration": 700,
         "autoLoad": true,
         "hfov": 110,
         "escapeHTML": true
       },
       "scenes": {
-        "entrance": {
-          "title": "Campus Entrance",
+        "gerbang_masuk": {
+          "title": "Gerbang Masuk",
           "type": "equirectangular",
-          "panorama": "images/entrance.jpg",
+          "panorama": "images/gerbang_masuk.jpg",
           "yaw": 0,
           "hotSpots": [
-            {"pitch": -5, "yaw": 14, "type": "scene", "text": "Go to Classroom", "sceneId": "classroom"},
-            {"pitch": 10, "yaw": -50, "type": "info", "text": "Welcome to our virtual campus tour!"}
+            {"pitch": 0, "yaw": 0, "type": "scene", "text": "Go to jalan dari gerbang", "sceneId": "jalan_dari_gerbang"},
+            {"pitch": 10, "yaw": -50, "type": "info", "text": "Welcome to our virtual Benteng Rotterdam tour!"}
           ]
         },
-        "classroom": {
-          "title": "Classroom",
+        "jalan_dari_gerbang": {
+          "title": "Jalan Dari Gerbang",
           "type": "equirectangular",
-          "panorama": "images/classroom.jpg",
+          "panorama": "images/jalan_dari_gerbang.jpg",
           "yaw": 0,
           "hotSpots": [
-            {"pitch": -6, "yaw": 30, "type": "scene", "text": "Go to Library", "sceneId": "library"},
-            {"pitch": -6, "yaw": -110, "type": "scene", "text": "Back to Entrance", "sceneId": "entrance"},
+            {"pitch": 0, "yaw": 0, "type": "scene", "text": "Go to Bangunan Melengkung", "sceneId": "bangunan_melengkung"},
+            {"pitch": -6, "yaw": -110, "type": "scene", "text": "Back to Gerbang Masuk", "sceneId": "gerbang_masuk"},
             {"pitch": 8, "yaw": 3, "type": "info", "text": "Students learn and work together here."}
           ]
         },
-        "library": {
-          "title": "Library",
+        "bangunan_melengkung": {
+          "title": "Bangunan Melengkung",
           "type": "equirectangular",
-          "panorama": "images/library.jpg",
+          "panorama": "images/bangunan_melengkung.jpg",
           "yaw": 0,
           "hotSpots": [
-            {"pitch": -7, "yaw": -36, "type": "scene", "text": "Back to Classroom", "sceneId": "classroom"},
-            {"pitch": -7, "yaw": 100, "type": "scene", "text": "Return to Entrance", "sceneId": "entrance"},
+            {"pitch": 0, "yaw": 0, "type": "scene", "text": "Go to Jalan Tengah Halaman", "sceneId": "jalan_tengah_halaman"},
+            {"pitch": -6, "yaw": -110, "type": "scene", "text": "Back to Jalan dari Gerbang", "sceneId": "jalan_dari_gerbang"},
+            {"pitch": 8, "yaw": 3, "type": "info", "text": "Students learn and work together here."}
+          ]
+        },
+        "jalan_tengah_halaman": {
+          "title": "Jalan Tengah Halaman",
+          "type": "equirectangular",
+          "panorama": "images/jalan_tengah_halaman.jpg",
+          "yaw": 0,
+          "hotSpots": [
+            {"pitch": 0, "yaw": 0, "type": "scene", "text": "Go to Sisi Bangunan", "sceneId": "sisi_bangunan"},
+            {"pitch": -6, "yaw": -110, "type": "scene", "text": "Back to Bangunan Melengkung", "sceneId": "bangunan_melengkung"},
+            {"pitch": 8, "yaw": 3, "type": "info", "text": "Students learn and work together here."}
+          ]
+        },
+        "sisi_bangunan": {
+          "title": "Sisi Bangunan",
+          "type": "equirectangular",
+          "panorama": "images/sisi_bangunan.jpg",
+          "yaw": 0,
+          "hotSpots": [
+            {"pitch": 0, "yaw": 0, "type": "scene", "text": "Go to Arkade dan Taman Kecil", "sceneId": "arkade_dan_taman_kecil"},
+            {"pitch": -6, "yaw": -110, "type": "scene", "text": "Back to Jalan Tengah Halaman", "sceneId": "jalan_tengah_halaman"},
+            {"pitch": 8, "yaw": 3, "type": "info", "text": "Students learn and work together here."}
+          ]
+        },
+        "arkade_dan_taman_kecil": {
+          "title": "Arkade dan Taman Kecil",
+          "type": "equirectangular",
+          "panorama": "images/arkade_dan_taman_kecil.jpg",
+          "yaw": 0,
+          "hotSpots": [
+            {"pitch": 0, "yaw": 0, "type": "scene", "text": "Go to Sisi Lapangan Rumpt", "sceneId": "lapangan_rumput"},
+            {"pitch": -6, "yaw": -110, "type": "scene", "text": "Back to Sisi Bangunan", "sceneId": "sisi_bangunan"},
+            {"pitch": 8, "yaw": 3, "type": "info", "text": "Students learn and work together here."}
+          ]
+        },
+        "lapangan_rumput": {
+          "title": "Lapangan Rumput",
+          "type": "equirectangular",
+          "panorama": "images/lapangan_rumput.jpg",
+          "yaw": 0,
+          "hotSpots": [
+            {"pitch": 0, "yaw": 0, "type": "scene", "text": "Go to Arkade Bertiang", "sceneId": "arkade_bertiang"},
+            {"pitch": -6, "yaw": -110, "type": "scene", "text": "Back to Arkade dan Taman Kecil", "sceneId": "arkade_dan_taman_kecil"},
+            {"pitch": 8, "yaw": 3, "type": "info", "text": "Students learn and work together here."}
+          ]
+        },
+        "arkade_bertiang": {
+          "title": "Arkade Bertiang",
+          "type": "equirectangular",
+          "panorama": "images/arkade_bertiang.jpg",
+          "yaw": 0,
+          "hotSpots": [
+            {"pitch": 0, "yaw": 0, "type": "scene", "text": "Go to Taman Melingkar", "sceneId": "taman_melingkar"},
+            {"pitch": -6, "yaw": -110, "type": "scene", "text": "Back to Lapangan Rumput", "sceneId": "lapangan_rumput"},
+            {"pitch": 8, "yaw": 3, "type": "info", "text": "Students learn and work together here."}
+          ]
+        },
+        "taman_melingkar": {
+          "title": "Taman Melingkar",
+          "type": "equirectangular",
+          "panorama": "images/taman_melingkar.jpg",
+          "yaw": 0,
+          "hotSpots": [
+            {"pitch": 0, "yaw": 0, "type": "scene", "text": "Go to Lorong Antarbangunan", "sceneId": "lorong_antarbangunan"},
+            {"pitch": -6, "yaw": -110, "type": "scene", "text": "Back to Arkade Bertiang", "sceneId": "arkade_bertiang"},
+            {"pitch": 8, "yaw": 3, "type": "info", "text": "Students learn and work together here."}
+          ]
+        },
+        "lorong_antarbangunan": {
+          "title": "Lorong Antarbangunan",
+          "type": "equirectangular",
+          "panorama": "images/lorong_antarbangunan.jpg",
+          "yaw": 0,
+          "hotSpots": [
+            {"pitch": 0, "yaw": 0, "type": "scene", "text": "Go to Sisi Bangunan Timur", "sceneId": "sisi_bangunan_timur"},
+            {"pitch": -6, "yaw": -110, "type": "scene", "text": "Back to Taman Melingkar", "sceneId": "taman_melingkar"},
+            {"pitch": 8, "yaw": 3, "type": "info", "text": "Students learn and work together here."}
+          ]
+        },
+        "sisi_bangunan_timur": {
+          "title": "Sisi Bangunan Timur",
+          "type": "equirectangular",
+          "panorama": "images/sisi_bangunan_timur.jpg",
+          "yaw": 0,
+          "hotSpots": [
+            {"pitch": 0, "yaw": 0, "type": "scene", "text": "Back to Gerbang Masuk", "sceneId": "gerbang_masuk"},
+            {"pitch": -7, "yaw": 100, "type": "scene", "text": "Return to Lorong Antarbangunan", "sceneId": "lorong_antarbangunan"},
             {"pitch": 9, "yaw": 5, "type": "info", "text": "Study resources and reading spaces."}
           ]
         }

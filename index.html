@@ -1,33 +1,554 @@
-<!doctype html>
-<html lang="en">
+
+<!DOCTYPE html>
+<html lang="id">
 <head>
-  <meta charset="utf-8">
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>My Campus 360 Tour</title>
-  <!-- Pannellum loads from the CDN; an internet connection is required. -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.7/build/pannellum.css">
+  <title>Benteng Rotterdam | Interactive Virtual Tour</title>
+
+  <link rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/pannellum@2.5.7/build/pannellum.css">
   <script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.7/build/pannellum.js"></script>
+
   <style>
-    * { box-sizing: border-box; }
-    body { margin: 0; font-family: Arial, Helvetica, sans-serif; background: #0f172a; color: #fff; }
-    header { padding: 14px 22px; background: #17243a; }
-    h1 { margin: 0; font-size: 1.35rem; }
-    .intro { margin: 6px 0 0; color: #d3e2f1; font-size: .95rem; }
-    #panorama { width: 100%; height: calc(100vh - 116px); min-height: 380px; }
-    footer { min-height: 46px; padding: 13px 22px; background: #17243a; color: #cbd5e1; font-size: .86rem; }
-    footer span { color: #9bd8f2; font-weight: bold; }
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #0f172a;
+      color: #fff;
+    }
+
+    header {
+      padding: 16px 22px;
+      background: #17243a;
+      border-bottom: 1px solid rgba(216, 181, 109, 0.25);
+    }
+
+    h1 {
+      margin: 0;
+      color: #f5d99b;
+      font-size: 1.4rem;
+    }
+
+    .intro {
+      margin: 7px 0 0;
+      color: #d3e2f1;
+      font-size: 0.92rem;
+      line-height: 1.6;
+    }
+
+    #panorama {
+      width: 100%;
+      height: 62vh;
+      min-height: 360px;
+      background: #111827;
+    }
+
+    /* ==============================
+       TOMBOL PILIHAN LOKASI
+    ============================== */
+
+    .location-panel {
+      padding: 20px 22px 24px;
+      background: #111c2e;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .location-heading {
+      margin: 0 0 6px;
+      color: #f5d99b;
+      font-size: 1.05rem;
+    }
+
+    .location-description {
+      margin: 0 0 15px;
+      color: #b9c7d8;
+      font-size: 0.85rem;
+      line-height: 1.5;
+    }
+
+    .location-buttons {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .location-btn {
+      min-height: 45px;
+      padding: 10px 12px;
+      border: 1px solid #40516a;
+      border-radius: 9px;
+      background: #1b2a40;
+      color: #e5edf7;
+      font-size: 0.85rem;
+      line-height: 1.4;
+      text-align: left;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .location-btn:hover {
+      background: #293c55;
+      border-color: #d8b56d;
+      transform: translateY(-2px);
+    }
+
+    .location-btn.active {
+      background: #d8b56d;
+      color: #17243a;
+      border-color: #f5d99b;
+      font-weight: bold;
+      box-shadow: 0 3px 12px rgba(216, 181, 109, 0.18);
+    }
+
+    .location-number {
+      margin-right: 5px;
+    }
+
+    /* ==============================
+       HOTSPOT INFORMASI
+       Tidak mengubah hotspot panah
+    ============================== */
+
+    #panorama .pnlm-hotspot.pnlm-info {
+      width: 38px;
+      height: 38px;
+      border: 2px solid #f5d99b;
+      border-radius: 50%;
+      background-color: #20344d;
+      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.4);
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    #panorama .pnlm-hotspot.pnlm-info:hover {
+      transform: scale(1.12);
+      background-color: #d8b56d;
+    }
+
+    /* Informasi dibuka melalui jendela tengah,
+       bukan tooltip kecil di samping hotspot */
+    #panorama .pnlm-hotspot.pnlm-info .pnlm-tooltip {
+      display: none !important;
+    }
+
+    /* ==============================
+       JENDELA INFORMASI DI TENGAH
+    ============================== */
+
+    .info-modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 99999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: rgba(5, 12, 24, 0.78);
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+    }
+
+    .info-modal-overlay.show {
+      display: flex;
+    }
+
+    .info-modal {
+      position: relative;
+      width: min(760px, 92vw);
+      max-height: 78vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+
+      background: #17263b;
+      border: 1px solid rgba(216, 181, 109, 0.8);
+      border-radius: 18px;
+      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.5);
+
+      animation: modalAppear 0.22s ease-out;
+    }
+
+    @keyframes modalAppear {
+      from {
+        opacity: 0;
+        transform: translateY(12px) scale(0.98);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .info-modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 22px 26px;
+
+      background: linear-gradient(120deg, #203650, #17263b);
+      border-bottom: 1px solid rgba(216, 181, 109, 0.35);
+    }
+
+    .info-modal-label {
+      margin: 0 0 6px;
+      color: #d8b56d;
+      font-size: 11px;
+      font-weight: bold;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .info-modal-title {
+      margin: 0;
+      color: #fff3d5;
+      font-size: 24px;
+      line-height: 1.35;
+    }
+
+    .info-modal-close {
+      flex-shrink: 0;
+      width: 40px;
+      height: 40px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.08);
+      color: white;
+      font-size: 26px;
+      line-height: 1;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .info-modal-close:hover {
+      background: #d8b56d;
+      color: #17243a;
+      transform: rotate(90deg);
+    }
+
+    .info-modal-body {
+      padding: 24px 28px;
+      overflow-y: auto;
+      color: #e1e8f0;
+      font-size: 15px;
+      line-height: 1.9;
+      overflow-wrap: anywhere;
+    }
+
+    .info-modal-footer {
+      padding: 13px 26px;
+      color: #c5d0df;
+      font-size: 12px;
+      line-height: 1.5;
+      background: rgba(255, 255, 255, 0.025);
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    footer {
+      padding: 14px 22px;
+      background: #17243a;
+      color: #cbd5e1;
+      font-size: 0.85rem;
+      line-height: 1.5;
+    }
+
+    footer span {
+      color: #f5d99b;
+      font-weight: bold;
+    }
+
+    /* ==============================
+       RESPONSIF TABLET
+    ============================== */
+
+    @media (max-width: 900px) {
+      .location-buttons {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      #panorama {
+        height: 58vh;
+      }
+    }
+
+    /* ==============================
+       RESPONSIF HP
+    ============================== */
+
+    @media (max-width: 560px) {
+      header {
+        padding: 16px;
+      }
+
+      h1 {
+        font-size: 1.15rem;
+      }
+
+      #panorama {
+        height: 54vh;
+        min-height: 320px;
+      }
+
+      .location-panel {
+        padding: 17px 14px 20px;
+      }
+
+      .location-buttons {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .location-btn {
+        padding: 10px;
+        font-size: 0.8rem;
+      }
+
+      .info-modal-overlay {
+        padding: 14px;
+      }
+
+      .info-modal {
+        width: 100%;
+        max-height: 78vh;
+        border-radius: 14px;
+      }
+
+      .info-modal-header {
+        padding: 17px;
+      }
+
+      .info-modal-title {
+        font-size: 19px;
+      }
+
+      .info-modal-body {
+        padding: 18px;
+        font-size: 14px;
+        line-height: 1.8;
+      }
+
+      .info-modal-footer {
+        padding: 12px 18px;
+      }
+
+      footer {
+        padding: 13px 16px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .info-modal,
+      .location-btn,
+      .info-modal-close {
+        animation: none;
+        transition: none;
+      }
+    }
   </style>
 </head>
+
 <body>
   <header>
     <h1>Benteng Rotterdam | Interactive Virtual Tour</h1>
-    <p class="intro">Drag to look around. Click arrows to change locations; click info icons for explanations.</p>
+    <p class="intro">
+      Geser panorama untuk melihat sekeliling. Klik panah untuk berpindah
+      lokasi dan ikon informasi untuk membaca penjelasan. Kamu juga bisa
+      memilih lokasi melalui tombol di bawah panorama.
+    </p>
   </header>
-  <main><div id="panorama" aria-label="Interactive 360-degree campus tour"></div></main>
-  <footer>Built with <span>Pannellum</span>, <span>Git</span> and <span>GitHub Pages</span>.</footer>
+
+  <main>
+    <div
+      id="panorama"
+      aria-label="Tur virtual 360 derajat Benteng Rotterdam">
+    </div>
+
+    <section class="location-panel">
+      <h2 class="location-heading">Jelajahi Lokasi</h2>
+      <p class="location-description">
+        Pilih lokasi yang ingin dikunjungi. Tombol aktif akan mengikuti
+        lokasi panorama yang sedang ditampilkan.
+      </p>
+
+      <div class="location-buttons">
+        <button class="location-btn active"
+          data-scene="gerbang_masuk">
+          <span class="location-number">01.</span> Gerbang Masuk
+        </button>
+
+        <button class="location-btn"
+          data-scene="jalan_dari_gerbang">
+          <span class="location-number">02.</span> Jalan dari Gerbang
+        </button>
+
+        <button class="location-btn"
+          data-scene="bangunan_melengkung">
+          <span class="location-number">03.</span> Bangunan Melengkung
+        </button>
+
+        <button class="location-btn"
+          data-scene="jalan_tengah_halaman">
+          <span class="location-number">04.</span> Jalan Tengah Halaman
+        </button>
+
+        <button class="location-btn"
+          data-scene="sisi_bangunan">
+          <span class="location-number">05.</span> Sisi Bangunan
+        </button>
+
+        <button class="location-btn"
+          data-scene="arkade_dan_taman_kecil">
+          <span class="location-number">06.</span> Arkade dan Taman Kecil
+        </button>
+
+        <button class="location-btn"
+          data-scene="lapangan_rumput">
+          <span class="location-number">07.</span> Lapangan Rumput
+        </button>
+
+        <button class="location-btn"
+          data-scene="arkade_bertiang">
+          <span class="location-number">08.</span> Arkade Bertiang
+        </button>
+
+        <button class="location-btn"
+          data-scene="taman_melingkar">
+          <span class="location-number">09.</span> Taman Melingkar
+        </button>
+
+        <button class="location-btn"
+          data-scene="lorong_antarbangunan">
+          <span class="location-number">10.</span> Lorong Antarbangunan
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    Built with <span>Pannellum</span>, <span>Git</span> and
+    <span>GitHub Pages</span>.
+  </footer>
+
+  <!-- JENDELA INFORMASI -->
+  <div class="info-modal-overlay"
+       id="infoModalOverlay"
+       role="dialog"
+       aria-modal="true"
+       aria-labelledby="infoModalTitle">
+
+    <div class="info-modal">
+      <div class="info-modal-header">
+        <div>
+          <p class="info-modal-label">
+            Benteng Rotterdam · Informasi
+          </p>
+          <h2 class="info-modal-title" id="infoModalTitle">
+            Informasi Lokasi
+          </h2>
+        </div>
+
+        <button class="info-modal-close"
+                id="infoModalClose"
+                aria-label="Tutup jendela">
+          &times;
+        </button>
+      </div>
+
+      <div class="info-modal-body" id="infoModalBody"></div>
+
+      <div class="info-modal-footer">
+        Jelajahi sejarah, kenali warisan budaya.
+      </div>
+    </div>
+  </div>
 
   <script>
-    pannellum.viewer("panorama", {
+    /* ==============================
+       FUNGSI JENDELA INFORMASI
+    ============================== */
+
+    const infoModalOverlay =
+      document.getElementById("infoModalOverlay");
+
+    const infoModalTitle =
+      document.getElementById("infoModalTitle");
+
+    const infoModalBody =
+      document.getElementById("infoModalBody");
+
+    const infoModalClose =
+      document.getElementById("infoModalClose");
+
+    let lastFocusedElement = null;
+
+    function openInfoModal(title, text) {
+      lastFocusedElement = document.activeElement;
+
+      infoModalTitle.textContent = title;
+      infoModalBody.textContent = text;
+
+      infoModalOverlay.classList.add("show");
+      document.body.style.overflow = "hidden";
+
+      infoModalClose.focus();
+    }
+
+    function closeInfoModal() {
+      infoModalOverlay.classList.remove("show");
+      document.body.style.overflow = "";
+
+      if (lastFocusedElement) {
+        lastFocusedElement.focus();
+      }
+    }
+
+    infoModalClose.addEventListener("click", closeInfoModal);
+
+    /* Tutup jika area gelap di luar jendela diklik */
+    infoModalOverlay.addEventListener("click", function(event) {
+      if (event.target === infoModalOverlay) {
+        closeInfoModal();
+      }
+    });
+
+    /* Tutup menggunakan tombol Esc */
+    document.addEventListener("keydown", function(event) {
+      if (
+        event.key === "Escape" &&
+        infoModalOverlay.classList.contains("show")
+      ) {
+        closeInfoModal();
+      }
+    });
+
+    /* Fungsi pembuat hotspot informasi */
+    function infoHotspot(title, text, pitch, yaw) {
+      return {
+        pitch: pitch,
+        yaw: yaw,
+        type: "info",
+        text: "Klik untuk membaca informasi",
+        clickHandlerFunc: function(hotSpotDiv, args) {
+          openInfoModal(args.title, args.text);
+        },
+        clickHandlerArgs: {
+          title: title,
+          text: text
+        }
+      };
+    }
+
+    /* ==============================
+       KONFIGURASI PANORAMA
+    ============================== */
+
+    const viewer = pannellum.viewer("panorama", {
       "default": {
         "firstScene": "gerbang_masuk",
         "sceneFadeDuration": 700,
@@ -35,6 +556,7 @@
         "hfov": 110,
         "escapeHTML": true
       },
+
       "scenes": {
         "gerbang_masuk": {
           "title": "Gerbang Masuk",
@@ -42,121 +564,335 @@
           "panorama": "images/gerbang_masuk.jpg",
           "yaw": 0,
           "hotSpots": [
-            {"pitch": 0, "yaw": 0, "type": "scene", "text": "Go to jalan dari gerbang", "sceneId": "jalan_dari_gerbang"},
-            {"pitch": 10, "yaw": -50, "type": "info", "text": "Gerbang Masuk — Selamat datang di Benteng Rotterdam, salah satu situs bersejarah penting di Kota Makassar, Sulawesi Selatan. Benteng ini memiliki sejarah panjang yang berkaitan dengan Kerajaan Gowa dan masa kolonial Belanda. Melalui tur virtual ini, mari mengenal lebih dekat sejarah dan warisan budaya yang tersimpan di dalamnya."}
+            {
+              "pitch": -10,
+              "yaw": 56,
+              "type": "scene",
+              "text": "Go to Jalan dari Gerbang",
+              "sceneId": "jalan_dari_gerbang"
+            },
+            infoHotspot(
+              "Gerbang Masuk",
+              "Selamat datang di Benteng Rotterdam, salah satu situs bersejarah penting di Kota Makassar, Sulawesi Selatan. Benteng ini memiliki sejarah panjang yang berkaitan dengan Kerajaan Gowa dan masa kolonial Belanda. Melalui tur virtual ini, mari mengenal lebih dekat sejarah dan warisan budaya yang tersimpan di dalamnya.",
+              -5, -130
+            )
           ]
         },
+
         "jalan_dari_gerbang": {
           "title": "Jalan Dari Gerbang",
           "type": "equirectangular",
           "panorama": "images/jalan_dari_gerbang.jpg",
           "yaw": 0,
           "hotSpots": [
-            {"pitch": 0, "yaw": 0, "type": "scene", "text": "Go to Bangunan Melengkung", "sceneId": "bangunan_melengkung"},
-            {"pitch": -6, "yaw": -110, "type": "scene", "text": "Back to Gerbang Masuk", "sceneId": "gerbang_masuk"},
-            {"pitch": 8, "yaw": 3, "type": "info", "text": "Jalan dari Gerbang — Area ini menjadi bagian awal perjalanan pengunjung setelah memasuki kompleks Benteng Rotterdam. Dari jalur ini, pengunjung dapat mulai mengamati suasana lingkungan dan bangunan bersejarah di sekitarnya. Mari mengenal kawasan ini dan memahami pentingnya menjaga peninggalan sejarah sebagai bagian dari warisan budaya."}
+            {
+              "pitch": 0,
+              "yaw": 0,
+              "type": "scene",
+              "text": "Go to Bangunan Melengkung",
+              "sceneId": "bangunan_melengkung"
+            },
+            {
+              "pitch": -15,
+              "yaw": 178,
+              "type": "scene",
+              "text": "Back to Gerbang Masuk",
+              "sceneId": "gerbang_masuk"
+            },
+            infoHotspot(
+              "Jalan dari Gerbang",
+              "Area ini menjadi bagian awal perjalanan pengunjung setelah memasuki kompleks Benteng Rotterdam. Dari jalur ini, pengunjung dapat mulai mengamati suasana lingkungan dan bangunan bersejarah di sekitarnya. Mari mengenal kawasan ini dan memahami pentingnya menjaga peninggalan sejarah sebagai bagian dari warisan budaya.",
+              -10, 0
+            )
           ]
         },
+
         "bangunan_melengkung": {
           "title": "Bangunan Melengkung",
           "type": "equirectangular",
           "panorama": "images/bangunan_melengkung.jpg",
           "yaw": 0,
           "hotSpots": [
-            {"pitch": 0, "yaw": 0, "type": "scene", "text": "Go to Jalan Tengah Halaman", "sceneId": "jalan_tengah_halaman"},
-            {"pitch": -6, "yaw": -110, "type": "scene", "text": "Back to Jalan dari Gerbang", "sceneId": "jalan_dari_gerbang"},
-            {"pitch": 8, "yaw": 3, "type": "info", "text": "Bangunan Melengkung — Benteng Rotterdam memiliki kompleks bangunan dengan karakter arsitektur yang berkembang sepanjang sejarahnya. Bentuk, bahan, pintu, jendela, dan bagian-bagian bangunan menjadi petunjuk untuk memahami cara ruang di dalam benteng pernah digunakan. Amati bangunan ini dan perhatikan detail yang membedakannya dari bangunan di sekitarnya."}
+            {
+              "pitch": -5,
+              "yaw": -4,
+              "type": "scene",
+              "text": "Go to Jalan Tengah Halaman",
+              "sceneId": "jalan_tengah_halaman"
+            },
+            {
+              "pitch": -6,
+              "yaw": -185,
+              "type": "scene",
+              "text": "Back to Jalan dari Gerbang",
+              "sceneId": "jalan_dari_gerbang"
+            },
+            infoHotspot(
+              "Bangunan Melengkung",
+              "Benteng Rotterdam memiliki kompleks bangunan dengan karakter arsitektur yang berkembang sepanjang sejarahnya. Bentuk, bahan, pintu, jendela, dan bagian-bagian bangunan menjadi petunjuk untuk memahami cara ruang di dalam benteng pernah digunakan. Amati bangunan ini dan perhatikan detail yang membedakannya dari bangunan di sekitarnya.",
+              -5, -38
+            )
           ]
         },
+
         "jalan_tengah_halaman": {
           "title": "Jalan Tengah Halaman",
           "type": "equirectangular",
           "panorama": "images/jalan_tengah_halaman.jpg",
           "yaw": 0,
           "hotSpots": [
-            {"pitch": 0, "yaw": 0, "type": "scene", "text": "Go to Sisi Bangunan", "sceneId": "sisi_bangunan"},
-            {"pitch": -6, "yaw": -110, "type": "scene", "text": "Back to Bangunan Melengkung", "sceneId": "bangunan_melengkung"},
-            {"pitch": 8, "yaw": 3, "type": "info", "text": "Jalan Tengah Halaman — Bagian tengah kompleks membantu pengunjung melihat keterhubungan berbagai bangunan di dalam benteng. Jalur dan halaman menjadi bagian dari pengalaman menjelajahi kawasan bersejarah ini. Saat melewati area ini, pengunjung dapat mengamati bagaimana bangunan, jalan, dan ruang terbuka membentuk satu kesatuan lingkungan."}
+            {
+              "pitch": -10,
+              "yaw": -13,
+              "type": "scene",
+              "text": "Go to Sisi Bangunan",
+              "sceneId": "sisi_bangunan"
+            },
+            {
+              "pitch": -11,
+              "yaw": -190,
+              "type": "scene",
+              "text": "Back to Bangunan Melengkung",
+              "sceneId": "bangunan_melengkung"
+            },
+            infoHotspot(
+              "Jalan Tengah Halaman",
+              "Bagian tengah kompleks membantu pengunjung melihat keterhubungan berbagai bangunan di dalam benteng. Jalur dan halaman menjadi bagian dari pengalaman menjelajahi kawasan bersejarah ini. Saat melewati area ini, pengunjung dapat mengamati bagaimana bangunan, jalan, dan ruang terbuka membentuk satu kesatuan lingkungan.",
+              -20, -25
+            )
           ]
         },
+
         "sisi_bangunan": {
           "title": "Sisi Bangunan",
           "type": "equirectangular",
           "panorama": "images/sisi_bangunan.jpg",
           "yaw": 0,
           "hotSpots": [
-            {"pitch": 0, "yaw": 0, "type": "scene", "text": "Go to Arkade dan Taman Kecil", "sceneId": "arkade_dan_taman_kecil"},
-            {"pitch": -6, "yaw": -110, "type": "scene", "text": "Back to Jalan Tengah Halaman", "sceneId": "jalan_tengah_halaman"},
-            {"pitch": 8, "yaw": 3, "type": "info", "text": "Sisi Bangunan — Bagian ini menjadi kesempatan untuk mengamati lebih dekat kondisi fisik kompleks Benteng Rotterdam. Dinding, bukaan, dan bagian luar bangunan dapat membantu kita mengenali karakter bangunan bersejarah. Keberadaan kawasan ini juga mengingatkan kita akan pentingnya merawat peninggalan sejarah agar tetap dapat dipelajari oleh generasi berikutnya."}
+            {
+              "pitch": -10,
+              "yaw": 40,
+              "type": "scene",
+              "text": "Go to Arkade dan Taman Kecil",
+              "sceneId": "arkade_dan_taman_kecil"
+            },
+            {
+              "pitch": -6,
+              "yaw": -211,
+              "type": "scene",
+              "text": "Back to Jalan Tengah Halaman",
+              "sceneId": "jalan_tengah_halaman"
+            },
+            infoHotspot(
+              "Sisi Bangunan",
+              "Bagian ini menjadi kesempatan untuk mengamati lebih dekat kondisi fisik kompleks Benteng Rotterdam. Dinding, bukaan, dan bagian luar bangunan dapat membantu kita mengenali karakter bangunan bersejarah. Keberadaan kawasan ini juga mengingatkan kita akan pentingnya merawat peninggalan sejarah agar tetap dapat dipelajari oleh generasi berikutnya.",
+              8, 3
+            )
           ]
         },
+
         "arkade_dan_taman_kecil": {
           "title": "Arkade dan Taman Kecil",
           "type": "equirectangular",
           "panorama": "images/arkade_dan_taman_kecil.jpg",
           "yaw": 0,
           "hotSpots": [
-            {"pitch": 0, "yaw": 0, "type": "scene", "text": "Go to Sisi Lapangan Rumpt", "sceneId": "lapangan_rumput"},
-            {"pitch": -6, "yaw": -110, "type": "scene", "text": "Back to Sisi Bangunan", "sceneId": "sisi_bangunan"},
-            {"pitch": 8, "yaw": 3, "type": "info", "text": "Arkade dan Taman Kecil — Area ini memperlihatkan perpaduan bangunan dan ruang terbuka di dalam kompleks benteng. Bagian seperti ini dapat menjadi tempat pengunjung berhenti sejenak sambil menikmati suasana kawasan bersejarah. Kehadiran ruang terbuka juga mendukung pengalaman wisata yang tidak hanya berfokus pada bangunan, tetapi juga pada lingkungan sekitarnya."}
+            {
+              "pitch": -8,
+              "yaw": 25,
+              "type": "scene",
+              "text": "Go to Lapangan Rumput",
+              "sceneId": "lapangan_rumput"
+            },
+            {
+              "pitch": -11,
+              "yaw": -240,
+              "type": "scene",
+              "text": "Back to Sisi Bangunan",
+              "sceneId": "sisi_bangunan"
+            },
+            infoHotspot(
+              "Arkade dan Taman Kecil",
+              "Area ini memperlihatkan perpaduan bangunan dan ruang terbuka di dalam kompleks benteng. Bagian seperti ini dapat menjadi tempat pengunjung berhenti sejenak sambil menikmati suasana kawasan bersejarah. Kehadiran ruang terbuka juga mendukung pengalaman wisata yang tidak hanya berfokus pada bangunan, tetapi juga pada lingkungan sekitarnya.",
+              8, 3
+            )
           ]
         },
+
         "lapangan_rumput": {
           "title": "Lapangan Rumput",
           "type": "equirectangular",
           "panorama": "images/lapangan_rumput.jpg",
           "yaw": 0,
           "hotSpots": [
-            {"pitch": 0, "yaw": 0, "type": "scene", "text": "Go to Arkade Bertiang", "sceneId": "arkade_bertiang"},
-            {"pitch": -6, "yaw": -110, "type": "scene", "text": "Back to Arkade dan Taman Kecil", "sceneId": "arkade_dan_taman_kecil"},
-            {"pitch": 8, "yaw": 3, "type": "info", "text": "Lapangan Rumput — Area terbuka di dalam kompleks benteng memberikan ruang untuk menikmati suasana dan melihat bangunan dari sudut pandang yang lebih luas. Benteng Rotterdam dikenal sebagai tujuan wisata sejarah dan budaya di Makassar. Kawasan bersejarah seperti ini juga dapat menjadi ruang untuk kegiatan edukasi dan pengenalan warisan budaya."}
+            {
+              "pitch": 0,
+              "yaw": 0,
+              "type": "scene",
+              "text": "Go to Arkade Bertiang",
+              "sceneId": "arkade_bertiang"
+            },
+            {
+              "pitch": -6,
+              "yaw": -185,
+              "type": "scene",
+              "text": "Back to Arkade dan Taman Kecil",
+              "sceneId": "arkade_dan_taman_kecil"
+            },
+            infoHotspot(
+              "Lapangan Rumput",
+              "Area terbuka di dalam kompleks benteng memberikan ruang untuk menikmati suasana dan melihat bangunan dari sudut pandang yang lebih luas. Benteng Rotterdam dikenal sebagai tujuan wisata sejarah dan budaya di Makassar. Kawasan bersejarah seperti ini juga dapat menjadi ruang untuk kegiatan edukasi dan pengenalan warisan budaya.",
+              -15, -24
+            )
           ]
         },
+
         "arkade_bertiang": {
           "title": "Arkade Bertiang",
           "type": "equirectangular",
           "panorama": "images/arkade_bertiang.jpg",
           "yaw": 0,
           "hotSpots": [
-            {"pitch": 0, "yaw": 0, "type": "scene", "text": "Go to Taman Melingkar", "sceneId": "taman_melingkar"},
-            {"pitch": -6, "yaw": -110, "type": "scene", "text": "Back to Lapangan Rumput", "sceneId": "lapangan_rumput"},
-            {"pitch": 8, "yaw": 3, "type": "info", "text": "Arkade Bertiang — Bagian berarkade dengan deretan tiang merupakan salah satu elemen yang dapat ditemukan pada bangunan di kompleks Benteng Rotterdam. Selain membentuk tampilan bangunan, selasar bertiang juga dapat menjadi area peralihan antara bagian luar dan bagian dalam. Perhatikan bagaimana susunan tiang, atap, dan jalur pejalan kaki membentuk karakter ruang tersebut."}
+            {
+              "pitch": -18,
+              "yaw": 19,
+              "type": "scene",
+              "text": "Go to Taman Melingkar",
+              "sceneId": "taman_melingkar"
+            },
+            {
+              "pitch": -6,
+              "yaw": -170,
+              "type": "scene",
+              "text": "Back to Lapangan Rumput",
+              "sceneId": "lapangan_rumput"
+            },
+            infoHotspot(
+              "Arkade Bertiang",
+              "Bagian berarkade dengan deretan tiang merupakan salah satu elemen yang dapat ditemukan pada bangunan di kompleks Benteng Rotterdam. Selain membentuk tampilan bangunan, selasar bertiang juga dapat menjadi area peralihan antara bagian luar dan bagian dalam. Perhatikan bagaimana susunan tiang, atap, dan jalur pejalan kaki membentuk karakter ruang tersebut.",
+              -2, -15
+            )
           ]
         },
+
         "taman_melingkar": {
           "title": "Taman Melingkar",
           "type": "equirectangular",
           "panorama": "images/taman_melingkar.jpg",
           "yaw": 0,
           "hotSpots": [
-            {"pitch": 0, "yaw": 0, "type": "scene", "text": "Go to Lorong Antarbangunan", "sceneId": "lorong_antarbangunan"},
-            {"pitch": -6, "yaw": -110, "type": "scene", "text": "Back to Arkade Bertiang", "sceneId": "arkade_bertiang"},
-            {"pitch": 8, "yaw": 3, "type": "info", "text": "Taman Melingkar — Area taman menjadi bagian dari pengalaman menikmati lingkungan Benteng Rotterdam. Selain menyimpan nilai sejarah, kawasan benteng juga memiliki daya tarik sebagai tempat untuk mengenal warisan budaya dan menikmati suasana kota. Saat menjelajahi area ini, pengunjung dapat melihat bagaimana ruang terbuka hadir berdampingan dengan bangunan bersejarah."}
+            {
+              "pitch": 0,
+              "yaw": 0,
+              "type": "scene",
+              "text": "Go to Lorong Antarbangunan",
+              "sceneId": "lorong_antarbangunan"
+            },
+            {
+              "pitch": -6,
+              "yaw": -110,
+              "type": "scene",
+              "text": "Back to Arkade Bertiang",
+              "sceneId": "arkade_bertiang"
+            },
+            infoHotspot(
+              "Taman Melingkar",
+              "Area taman menjadi bagian dari pengalaman menikmati lingkungan Benteng Rotterdam. Selain menyimpan nilai sejarah, kawasan benteng juga memiliki daya tarik sebagai tempat untuk mengenal warisan budaya dan menikmati suasana kota. Saat menjelajahi area ini, pengunjung dapat melihat bagaimana ruang terbuka hadir berdampingan dengan bangunan bersejarah.",
+              -20, 9
+            )
           ]
         },
+
         "lorong_antarbangunan": {
           "title": "Lorong Antarbangunan",
           "type": "equirectangular",
           "panorama": "images/lorong_antarbangunan.jpg",
           "yaw": 0,
           "hotSpots": [
-            {"pitch": 0, "yaw": 0, "type": "scene", "text": "Go to Sisi Bangunan Timur", "sceneId": "sisi_bangunan_timur"},
-            {"pitch": -6, "yaw": -110, "type": "scene", "text": "Back to Taman Melingkar", "sceneId": "taman_melingkar"},
-            {"pitch": 8, "yaw": 3, "type": "info", "text": "Lorong Antarbangunan — Lorong menjadi bagian dari jalur pergerakan pengunjung di antara bangunan-bangunan dalam kompleks. Saat melewatinya, kita dapat melihat lebih dekat hubungan antarruang dan suasana di antara bangunan bersejarah. Lorong juga membantu pengunjung mengenali bahwa Benteng Rotterdam bukan hanya satu bangunan, melainkan kompleks yang memiliki berbagai bagian dengan karakter masing-masing."}
+            {
+              "pitch": -5,
+              "yaw": -32,
+              "type": "scene",
+              "text": "Go to Sisi Bangunan Timur",
+              "sceneId": "sisi_bangunan_timur"
+            },
+            {
+              "pitch": -6,
+              "yaw": -110,
+              "type": "scene",
+              "text": "Back to Taman Melingkar",
+              "sceneId": "taman_melingkar"
+            },
+            infoHotspot(
+              "Lorong Antarbangunan",
+              "Lorong menjadi bagian dari jalur pergerakan pengunjung di antara bangunan-bangunan dalam kompleks. Saat melewatinya, kita dapat melihat lebih dekat hubungan antarruang dan suasana di antara bangunan bersejarah. Lorong juga membantu pengunjung mengenali bahwa Benteng Rotterdam bukan hanya satu bangunan, melainkan kompleks yang memiliki berbagai bagian dengan karakter masing-masing.",
+              8, 3
+            )
           ]
         },
+
         "sisi_bangunan_timur": {
           "title": "Sisi Bangunan Timur",
           "type": "equirectangular",
           "panorama": "images/sisi_bangunan_timur.jpg",
           "yaw": 0,
           "hotSpots": [
-            {"pitch": 0, "yaw": 0, "type": "scene", "text": "Back to Gerbang Masuk", "sceneId": "gerbang_masuk"},
-            {"pitch": -7, "yaw": 100, "type": "scene", "text": "Return to Lorong Antarbangunan", "sceneId": "lorong_antarbangunan"},
-            {"pitch": 9, "yaw": 5, "type": "info", "text": "Sisi Bangunan Timur — Bagian ini menjadi salah satu titik akhir perjalanan virtual di Benteng Rotterdam. Setelah menjelajahi berbagai bagian kompleks, kita dapat melihat bahwa benteng ini menyimpan cerita tentang sejarah Makassar, perubahan kekuasaan, perkembangan arsitektur, dan pelestarian warisan budaya. Semoga penjelajahan ini menambah ketertarikan untuk mengenal serta menjaga peninggalan sejarah di sekitar kita."}
+            {
+              "pitch": -20,
+              "yaw": 190,
+              "type": "scene",
+              "text": "Back to Gerbang Masuk",
+              "sceneId": "gerbang_masuk"
+            },
+            {
+              "pitch": -15,
+              "yaw": -12,
+              "type": "scene",
+              "text": "Return to Lorong Antarbangunan",
+              "sceneId": "lorong_antarbangunan"
+            },
+            infoHotspot(
+              "Sisi Bangunan Timur",
+              "Bagian ini menjadi salah satu titik akhir perjalanan virtual di Benteng Rotterdam. Setelah menjelajahi berbagai bagian kompleks, kita dapat melihat bahwa benteng ini menyimpan cerita tentang sejarah Makassar, perubahan kekuasaan, perkembangan arsitektur, dan pelestarian warisan budaya. Semoga penjelajahan ini menambah ketertarikan untuk mengenal serta menjaga peninggalan sejarah di sekitar kita.",
+              9, 5
+            )
           ]
         }
       }
+    });
+
+    /* ==============================
+       TOMBOL PILIHAN LOKASI
+    ============================== */
+
+    const locationButtons =
+      document.querySelectorAll(".location-btn");
+
+    function updateActiveButton(sceneId) {
+      locationButtons.forEach(function(button) {
+        const isActive = button.dataset.scene === sceneId;
+
+        button.classList.toggle("active", isActive);
+
+        if (isActive) {
+          button.setAttribute("aria-current", "location");
+        } else {
+          button.removeAttribute("aria-current");
+        }
+      });
+    }
+
+    locationButtons.forEach(function(button) {
+      button.addEventListener("click", function() {
+        const sceneId = button.dataset.scene;
+        viewer.loadScene(sceneId);
+        updateActiveButton(sceneId);
+      });
+    });
+
+    /* Sinkronisasi tombol ketika berpindah lewat hotspot panah */
+    viewer.on("scenechange", function(sceneId) {
+      updateActiveButton(sceneId);
     });
   </script>
 </body>
